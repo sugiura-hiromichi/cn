@@ -1,3 +1,2 @@
-fn main() {
-   println!("Hello, world!");
-}
+const GITIGNORE: &str = "Cargo.lock";
+fn main() {}
