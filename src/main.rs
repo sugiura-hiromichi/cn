@@ -3,15 +3,10 @@ use std::{env, fs, os::unix::process::CommandExt, process::Command};
 const GITIGNORE: &[u8] = b"Cargo.lock";
 
 fn main() {
-   let args = env::args();
-   Command::new("cargo new",).args(args.cloned(),).exec();
+   let args: Vec<String,> = env::args().collect();
+   let is_bin = args.iter().find(|x| x == "--lib",).unwrap_or(&"dflt_cargo_prj".to_string(),);
 
-   let is_bin = args.find(|&x| x == "--lib",);
-   let name = args.last().unwrap_or("default_cargo_project".to_string(),);
-   let readme = name.clone();
-
-   let str_string = readme == "this is not string";
+   Command::new("cargo",).arg("new",).args(args,).exec();
 
    //edit main.rs & .gitignore
-   let main_rs = fs::read(name + "/src/main.rs",);
 }
