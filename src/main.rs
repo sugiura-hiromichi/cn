@@ -1,40 +1,60 @@
-use std::{env, fs, io, os::unix::process::CommandExt, process::Command};
+use {
+   mylibrary::sh_cmd,
+   std::{
+      env, fs,
+      io::{self, Write},
+      os::unix::process::CommandExt,
+      process::Command,
+   },
+};
 
-const GITIGNORE: &str = "\nCargo.lock";
+const GITIGNORE: &[u8] = b"
+Cargo.lock";
+const CARGO_TOML: &[u8] = b"
+mylibrary={git=\"https://github.com/ah-y/mylibrary\"}";
 const MAIN_RS: &[u8] = b"#![allow(unused)]
 
 fn main(){
 
 }";
-const LIB_RS: &[u8] = b"";
+const LIB_RS: &[u8] = b"#![allow(unused)]";
 
+///If `path` exist, override it's content
+fn override_path(path: &str, content: &[u8],) -> io::Result<(),> {
+   let mut cntnt = fs::read_to_string(path,)?;
+   cntnt = content;
+   fs::write(path, cntnt,)
+}
+
+///If `path` exist, append it's content
+fn append_path(path: &str, content: &[u8],) -> io::Result<(),> {
+   let mut cntnt = fs::read_to_string(path,)?;
+   cntnt.push_str(content,);
+   fs::write(path, cntnt,)
+}
+
+//  todo!("==============================================================
+//                [CommandLineArgument]
+//                        is there any way to handle options & path as
+// commandline argument
+// ==============================================================");
 fn main() -> io::Result<(),> {
-   //Detect name
-   let mut args: Vec<String,> = env::args().collect();
-   args.sort();
-   //If there is no name given, set default name "dflt_cargo_prj"
-   let name = args.pop().map_or("dflt_cargo_prj".to_string(), |is_name| {
-      if is_name.clone().into_bytes()[0] == b"-"[0] {
-         "dflt_cargo_prj".to_string()
-      } else {
-         is_name
-      }
-   },);
+   let mut buf = String::new();
+   println!("input options & name");
+   std::io::stdin().read_line(&mut buf,);
 
-   Command::new("cargo",).arg("new",).args(args.iter(),).arg(name.clone(),).exec();
-   Command::new("cd",).arg(name,).exec();
+   sh_cmd!("cargo", "new", { buf.split_whitespace() });
 
-   if env::args().find(|x| x == "--lib",) == None {
-      //When to bin package
-      fs::write("src/main.rs", MAIN_RS,)?;
-   } else {
+   if buf.contains("--lib",) {
       //When to lib package
-      fs::write("src/lib.rs", LIB_RS,)?;
+      override_path("src/lib.rs", LIB_RS,)?;
+   } else {
+      //When to bin package
+      override_path("src/main.rs", MAIN_RS,)?;
+      append_path(".gitignore", GITIGNORE,)?;
    }
 
-   let mut ignore = fs::read_to_string(".gitginore",)?;
-   ignore.push_str(GITIGNORE,);
-   fs::write(".gitginore", ignore,)?;
+   append_path("Cargo.toml", CARGO_TOML,)?;
 
    Ok((),)
 }
