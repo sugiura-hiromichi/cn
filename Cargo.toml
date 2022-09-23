@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 #clap={"3.2.17",features=["derive"]}
 cargo-util="0.2.1"
-mylibrary={git="https://github.com/ah-y/mylibrary"}
+mylibrary={git="https://github.com/sugiura-hiromichi/mylibrary"}
