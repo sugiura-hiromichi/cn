@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 use {
    mylibrary::sh_cmd,
    std::{
@@ -59,10 +58,3 @@ fn main() -> io::Result<(),> {
 
    Ok((),)
 }
-=======
-#![allow(unused)]
-
-fn main(){
-
-}
->>>>>>> refs/remotes/origin/master
