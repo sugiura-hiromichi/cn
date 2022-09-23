@@ -1,60 +1,83 @@
+//!Overrides cargo new
 use {
-   mylibrary::sh_cmd,
-   std::{
-      env, fs,
-      io::{self, Write},
-      os::unix::process::CommandExt,
-      process::Command,
-   },
+	mylibrary::sh_cmd,
+	std::{fs, io},
 };
 
-const GITIGNORE: &[u8] = b"
-Cargo.lock";
-const CARGO_TOML: &[u8] = b"
-mylibrary={git=\"https://github.com/ah-y/mylibrary\"}";
+const GITIGNORE: &[u8] = b"Cargo.lock";
+const CARGO_TOML: &[u8] = b"mylibrary={git=\"https://github.com/ah-y/mylibrary\"}";
 const MAIN_RS: &[u8] = b"#![allow(unused)]
 
 fn main(){
 
 }";
-const LIB_RS: &[u8] = b"#![allow(unused)]";
+const LIB_RS: &[u8] = b"//! `crate_name`
+
+#[cfg(test)]
+mod tests {
+   use super::*;
+
+      #[test]
+      fn give_test_name() {}
+}";
 
 ///If `path` exist, override it's content
-fn override_path(path: &str, content: &[u8],) -> io::Result<(),> {
-   let mut cntnt = fs::read_to_string(path,)?;
-   cntnt = content;
-   fs::write(path, cntnt,)
+fn override_path(path: String, contents: &[u8],) -> io::Result<(),> {
+	fs::read_to_string(path.clone(),)?;
+	fs::write(path, contents,)
 }
 
 ///If `path` exist, append it's content
-fn append_path(path: &str, content: &[u8],) -> io::Result<(),> {
-   let mut cntnt = fs::read_to_string(path,)?;
-   cntnt.push_str(content,);
-   fs::write(path, cntnt,)
+///`content` start with newline
+fn append_path(path: String, content: &[u8],) -> io::Result<(),> {
+	let mut cntnt = fs::read_to_string(path.clone(),)?;
+	cntnt.push_str(std::str::from_utf8(content,).unwrap(),);
+	fs::write(path, cntnt,)
 }
 
-//  todo!("==============================================================
-//                [CommandLineArgument]
-//                        is there any way to handle options & path as
-// commandline argument
-// ==============================================================");
+///  todo!("==============================================================
+///                [CommandLineArgument]
+///                        is there any way to handle options & path as
+/// commandline argument?
+/// ==============================================================");
 fn main() -> io::Result<(),> {
-   let mut buf = String::new();
-   println!("input options & name");
-   std::io::stdin().read_line(&mut buf,);
+	let mut buf = String::new();
+	println!("input options & name");
+	std::io::stdin().read_line(&mut buf,)?;
+	let args = format!("new {buf}");
 
-   sh_cmd!("cargo", "new", { buf.split_whitespace() });
+	sh_cmd!(
+		"cargo",
+		args.split_whitespace()
+	);
 
-   if buf.contains("--lib",) {
-      //When to lib package
-      override_path("src/lib.rs", LIB_RS,)?;
-   } else {
-      //When to bin package
-      override_path("src/main.rs", MAIN_RS,)?;
-      append_path(".gitignore", GITIGNORE,)?;
-   }
+	let name = buf
+		.split_whitespace()
+		.last()
+		.unwrap()
+		.to_string();
+	if buf.contains("--lib",) {
+		//When to lib package
+		override_path(
+			name.clone() + "/src/lib.rs",
+			LIB_RS,
+		)?;
+	} else {
+		//When to bin package
+		override_path(
+			name.clone() + "/src/main.rs",
+			MAIN_RS,
+		)?;
+		append_path(
+			name.clone() + "/.gitignore",
+			GITIGNORE,
+		)?;
+	}
 
-   append_path("Cargo.toml", CARGO_TOML,)?;
+	append_path(
+		name + "/Cargo.toml",
+		CARGO_TOML,
+	)?;
 
-   Ok((),)
+	Ok((),)
 }
