@@ -1,5 +1,4 @@
 //!Overrides cargo new
-use mylibrary::sh;
 use mylibrary::sh_cmd;
 use std::fs;
 use std::io;
@@ -21,12 +20,6 @@ mod tests {
       #[test]
       fn give_test_name() {}
 }";
-
-///If `path` exist, override it's content
-fn override_path(path: String, contents: &[u8],) -> io::Result<(),> {
-   fs::read_to_string(path.clone(),)?;
-   fs::write(path, contents,)
-}
 
 ///If `path` exist, append it's content
 ///`content` start with newline
@@ -52,16 +45,16 @@ fn main() -> io::Result<(),> {
    let name = buf.split_whitespace().last().unwrap().to_string();
    if buf.contains("--lib",) {
       //When to lib package
-      override_path(name.clone() + "/src/lib.rs", LIB_RS,)?;
+      fs::write(name.clone() + "/src/lib.rs", LIB_RS,)?;
    } else {
       //When to bin package
-      override_path(name.clone() + "/src/main.rs", MAIN_RS,)?;
+      fs::write(name.clone() + "/src/main.rs", MAIN_RS,)?;
       append_path(name.clone() + "/.gitignore", GITIGNORE,)?;
    }
 
    append_path(name.clone() + "/Cargo.toml", CARGO_TOML,)?;
-   append_path(name.clone() + "/README.md", README,)?;
-   sh::cd(name,)?;
+   fs::write(name.clone() + "/README.md", README,)?;
+   mylibrary::sh::cd(name,)?;
 
    Ok((),)
 }
