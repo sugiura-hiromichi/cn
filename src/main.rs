@@ -54,7 +54,6 @@ fn main() -> io::Result<(),> {
 
    append_path(name.clone() + "/Cargo.toml", CARGO_TOML,)?;
    fs::write(name.clone() + "/README.md", README,)?;
-   mylibrary::sh::cd(name,)?;
 
    Ok((),)
 }
