@@ -1,4 +1,5 @@
 //!Overrides cargo new
+use mylibrary::cli::CliParser;
 use mylibrary::sh_cmd;
 use std::fs;
 use std::io;
@@ -35,15 +36,17 @@ fn append_path(path: String, content: &[u8],) -> io::Result<(),> {
 /// commandline argument?
 /// ==============================================================");
 fn main() -> io::Result<(),> {
-   let mut buf = String::new();
-   println!("input options & name");
-   std::io::stdin().read_line(&mut buf,)?;
+   /*
+   let buf = mylibrary::cin!("input project name");
    let args = format!("new {buf}");
+   */
 
-   sh_cmd!("cargo", args.split_whitespace());
+   let args = std::env::args().to_string();
 
-   let name = buf.split_whitespace().last().unwrap().to_string();
-   if buf.contains("--lib",) {
+   sh_cmd!("cargo", format!("new {args}").split_whitespace());
+
+   let name = args.split_whitespace().last().unwrap().to_string();
+   if args.contains("--lib",) {
       //When to lib package
       fs::write(name.clone() + "/src/lib.rs", LIB_RS,)?;
    } else {
