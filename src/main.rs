@@ -1,4 +1,5 @@
 //!Overrides cargo new
+use mylibrary::sh;
 use mylibrary::sh_cmd;
 use std::fs;
 use std::io;
@@ -59,7 +60,8 @@ fn main() -> io::Result<(),> {
    }
 
    append_path(name.clone() + "/Cargo.toml", CARGO_TOML,)?;
-   append_path(name + "/README.md", README,)?;
+   append_path(name.clone() + "/README.md", README,)?;
+   sh::cd(name,)?;
 
    Ok((),)
 }
