@@ -28,28 +28,28 @@ mod tests {
 ///If `path` exist, append it's content
 ///`content` start with newline
 fn append_path<P: AsRef<Path,>,>(path: P, content: &[u8],) -> io::Result<(),> {
-   let mut cntnt = fs::read_to_string(&path,)?;
-   cntnt.push_str(std::str::from_utf8(content,).unwrap(),);
-   fs::write(path, cntnt,)
+	let mut cntnt = fs::read_to_string(&path,)?;
+	cntnt.push_str(std::str::from_utf8(content,).unwrap(),);
+	fs::write(path, cntnt,)
 }
 
 fn main() -> io::Result<(),> {
-   let args = std::env::args().to_string();
-   sh_cmd!("cargo", format!("new {args}").split_whitespace());
+	let args = std::env::args().to_string();
+	sh_cmd!("cargo", format!("new {args}").split_whitespace());
 
-   let name = args.split_whitespace().last().unwrap().to_string();
-   env::set_current_dir(name,)?;
-   if args.contains("--lib",) {
-      //When to lib package
-      fs::write("src/lib.rs", LIB_RS,)?;
-   } else {
-      //When to bin package
-      fs::write("src/main.rs", MAIN_RS,)?;
-      fs::write(".gitignore", GITIGNORE,)?;
-   }
+	let name = args.split_whitespace().last().unwrap().to_string();
+	env::set_current_dir(name,)?;
+	if args.contains("--lib",) {
+		//When to lib package
+		fs::write("src/lib.rs", LIB_RS,)?;
+	} else {
+		//When to bin package
+		fs::write("src/main.rs", MAIN_RS,)?;
+		fs::write(".gitignore", GITIGNORE,)?;
+	}
 
-   fs::write("README.md", README,)?;
-   append_path("Cargo.toml", CARGO_TOML,)?;
+	fs::write("README.md", README,)?;
+	append_path("Cargo.toml", CARGO_TOML,)?;
 
-   Ok((),)
+	Ok((),)
 }
