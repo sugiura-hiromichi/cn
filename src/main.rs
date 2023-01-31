@@ -1,5 +1,4 @@
 //!Overrides cargo new
-use mylibrary::cli::CliParser;
 use mylibrary::sh_cmd;
 use std::fs;
 use std::io;
@@ -36,28 +35,35 @@ mod tests {
 ///If `path` exist, append it's content
 ///`content` start with newline
 fn append_path(path: String, content: &[u8],) -> io::Result<(),> {
-   let mut cntnt = fs::read_to_string(path.clone(),)?;
-   cntnt.push_str(std::str::from_utf8(content,).unwrap(),);
-   fs::write(path, cntnt,)
+	let mut cntnt = fs::read_to_string(path.clone(),)?;
+	cntnt.push_str(std::str::from_utf8(content,).unwrap(),);
+	fs::write(path, cntnt,)
 }
 
 fn main() -> io::Result<(),> {
-   let args = std::env::args().to_string();
-   sh_cmd!("cargo", format!("new {args}").split_whitespace());
+	let args = std::env::args();
+	let mut arg_container = vec!["new".to_string()];
+	let mut arg_line = "new ".to_string();
+	args.for_each(|a| {
+		arg_line.push_str(&a,);
+		arg_line.push(' ',);
+		arg_container.push(a,);
+	},);
+	sh_cmd!("cargo", arg_container.clone())?;
 
-   let name = args.split_whitespace().last().unwrap().to_string();
-   if args.contains("--lib",) {
-      //When to lib package
-      fs::write(name.clone() + "/src/lib.rs", LIB_RS,)?;
-   } else {
-      //When to bin package
-      fs::write(name.clone() + "/src/main.rs", MAIN_RS,)?;
-      fs::write(name.clone() + "/.gitignore", GITIGNORE,)?;
-   }
+	let name = &arg_container[arg_container.len() - 1];
+	if arg_line.contains("--lib",) {
+		//When to lib package
+		fs::write(name.clone() + "/src/lib.rs", LIB_RS,)?;
+	} else {
+		//When to bin package
+		fs::write(name.clone() + "/src/main.rs", MAIN_RS,)?;
+		fs::write(name.clone() + "/.gitignore", GITIGNORE,)?;
+	}
 
-   fs::write(name.clone() + "/Makefile", MAKEFILE,)?;
-   fs::write(name.clone() + "/README.md", README,)?;
-   append_path(name.clone() + "/Cargo.toml", CARGO_TOML,)?;
+	fs::write(name.clone() + "/Makefile", MAKEFILE,)?;
+	fs::write(name.clone() + "/README.md", README,)?;
+	append_path(name.clone() + "/Cargo.toml", CARGO_TOML,)?;
 
-   Ok((),)
+	Ok((),)
 }
