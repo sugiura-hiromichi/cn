@@ -35,7 +35,7 @@ fn append_path<P: AsRef<Path,>,>(path: P, content: &[u8],) -> io::Result<(),> {
 
 fn main() -> io::Result<(),> {
 	let args = std::env::args().to_string();
-	sh_cmd!("cargo", format!("new {args}").split_whitespace());
+	sh_cmd!("cargo", format!("new {args}").split_whitespace())?;
 
 	let name = args.split_whitespace().last().unwrap().to_string();
 	env::set_current_dir(name,)?;
