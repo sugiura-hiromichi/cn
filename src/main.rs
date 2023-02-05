@@ -1,7 +1,5 @@
 //!Overrides cargo new
-use mylibrary::cli::CliParser;
 use mylibrary::sh_cmd;
-use std::env;
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -34,22 +32,36 @@ fn append_path<P: AsRef<Path,>,>(path: P, content: &[u8],) -> io::Result<(),> {
 }
 
 fn main() -> io::Result<(),> {
-	let args = std::env::args().to_string();
-	sh_cmd!("cargo", format!("new {args}").split_whitespace())?;
+	let args = std::env::args();
+	let mut arg_line = "new ".to_string();
+	args.for_each(|a| {
+		arg_line.push_str(&a,);
+		arg_line.push(' ',);
+	},);
+	sh_cmd!("cargo", arg_line.split_whitespace())?;
 
-	let name = args.split_whitespace().last().unwrap().to_string();
-	env::set_current_dir(name,)?;
-	if args.contains("--lib",) {
+	let name = arg_line.split_whitespace().last().unwrap().to_string();
+	if arg_line.contains("--lib",) {
 		//When to lib package
-		fs::write("src/lib.rs", LIB_RS,)?;
+		fs::write(format!("{name}/src/lib.rs"), LIB_RS,)?;
 	} else {
 		//When to bin package
-		fs::write("src/main.rs", MAIN_RS,)?;
-		fs::write(".gitignore", GITIGNORE,)?;
+		fs::write(format!("{name}/src/main.rs"), MAIN_RS,)?;
+		fs::write(format!("{name}/.gitignore"), GITIGNORE,)?;
 	}
 
-	fs::write("README.md", README,)?;
-	append_path("Cargo.toml", CARGO_TOML,)?;
-
+	fs::write(format!("{name}/README.md"), README,)?;
+	append_path(format!("{name}/Cargo.toml"), CARGO_TOML,)?;
 	Ok((),)
+}
+
+#[cfg(test)]
+mod tests {
+	//use super::*;
+
+	#[test]
+	fn sw() {
+		let s = "a b c ".split_whitespace().collect::<Vec<&str,>>();
+		assert_eq!(s, vec!["a", "b", "c"]);
+	}
 }
